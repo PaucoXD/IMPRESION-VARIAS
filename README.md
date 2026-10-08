@@ -4,7 +4,7 @@ App web para juntar varios archivos (PDF e imágenes), quitar las hojas que no q
 
 ## Uso
 
-1. Abre `index.html` en el navegador (doble clic, o publícalo en GitHub Pages / cualquier hosting estático).
+1. Ábrela en https://paucoxd.github.io/IMPRESION-VARIAS/ (o abre `index.html` directamente en el navegador).
 2. Arrastra tus archivos o haz clic en la zona para elegirlos. Admite PDF, JPG, PNG, WEBP, GIF, etc.
 3. Para **eliminar hojas**:
    - haz clic en la miniatura de la hoja (otro clic la restaura), o
