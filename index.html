@@ -25,7 +25,7 @@
     </label>
 
     <p class="hint" id="hint" hidden>
-      Bajo cada hoja: ↺ ↻ para girarla, ✎ para editarla (texto, dibujo, resaltar, tapar, imágenes o firmas) y ✕ para eliminarla.
+      Bajo cada hoja: ↺ ↻ para girarla, ✎ para editarla (cambiar el texto que ya trae, escribir, dibujar, resaltar, tapar, imágenes o firmas; con zoom) y ✕ para eliminarla.
       Las hojas eliminadas no se imprimen.
     </p>
 
@@ -61,6 +61,7 @@
       <div class="editor-group">
         <span class="editor-title" id="ed-title">Editar hoja</span>
         <button class="btn small tool" data-tool="move" title="Seleccionar y mover elementos">Mover</button>
+        <button class="btn small tool" data-tool="edittext" title="Clic en un texto del PDF para cambiarlo o borrarlo">Editar texto</button>
         <button class="btn small tool" data-tool="text" title="Clic en la hoja para escribir">Texto</button>
         <button class="btn small tool" data-tool="pen" title="Dibujar a mano alzada">Dibujar</button>
         <button class="btn small tool" data-tool="highlight" title="Arrastra para resaltar">Resaltar</button>
@@ -75,10 +76,16 @@
         <button class="btn small ghost" id="ed-clear">Borrar todo</button>
       </div>
       <div class="editor-group">
+        <button class="btn small ghost" id="ed-zoom-out" title="Alejar (Ctrl + rueda o pellizcar)">−</button>
+        <button class="btn small ghost zoom-label" id="ed-zoom-fit" title="Ajustar la hoja a la pantalla">100%</button>
+        <button class="btn small ghost" id="ed-zoom-in" title="Acercar (Ctrl + rueda o pellizcar)">+</button>
+      </div>
+      <div class="editor-group">
         <button class="btn small ghost" id="ed-cancel">Cancelar</button>
         <button class="btn small primary" id="ed-save">Guardar</button>
       </div>
     </div>
+    <p class="ed-note" id="ed-note" hidden></p>
     <div class="editor-stage">
       <div class="editor-wrap" id="ed-wrap">
         <canvas id="ed-bg"></canvas>
