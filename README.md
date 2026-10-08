@@ -13,8 +13,6 @@ Al abrir la página se ve la lista de herramientas (como iLovePDF). Todas trabaj
 - **Marca de agua**: texto en diagonal, al centro, arriba o abajo, con color, tamaño y transparencia.
 - **Números de página**: posición, formato (`1`, `Página 1 de 9`, `1 / 9`…), desde qué hoja y con qué número empezar.
 
-Marcadas como *Pronto*: ordenar páginas, recortar, censurar, proteger y desbloquear.
-
 ## Uso
 
 1. Ábrela en https://paucoxd.github.io/IMPRESION-VARIAS/ (o abre `index.html` directamente en el navegador).
