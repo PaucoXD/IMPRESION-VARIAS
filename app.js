@@ -909,6 +909,7 @@
     btnDownload.disabled = kept === 0;
     btnClear.disabled = docs.length === 0;
     hintEl.hidden = docs.length === 0;
+    document.body.classList.toggle("has-docs", docs.length > 0);
   }
 
   // ---------- Editor de hojas ----------
