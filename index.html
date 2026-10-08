@@ -10,8 +10,14 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <img class="logo" src="logo.png" alt="A&amp;C Group">
-      <h1>Impresión Varias</h1>
+      <picture>
+        <source srcset="logo-oscuro.png" media="(prefers-color-scheme: dark)">
+        <img class="logo" src="logo.png" alt="A&amp;C Group" width="223" height="160">
+      </picture>
+      <div class="brand-text">
+        <h1>Impresión Varias</h1>
+        <span class="tagline">Junta, edita e imprime tus documentos</span>
+      </div>
     </div>
     <div class="actions">
       <span id="summary" class="summary">Sin archivos</span>
@@ -24,9 +30,20 @@
   <main>
     <label id="dropzone" class="dropzone" for="file-input">
       <input id="file-input" type="file" multiple accept="application/pdf,image/*">
+      <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"
+          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       <strong>Arrastra aquí tus archivos</strong>
-      <span>o haz clic para elegirlos — PDF, JPG, PNG, WEBP, GIF…</span>
+      <span>o <u>haz clic para elegirlos</u> · PDF, JPG, PNG, WEBP, GIF…</span>
     </label>
+
+    <ul class="features" id="features">
+      <li><b>Junta</b>Varios PDF e imágenes en un solo trabajo de impresión.</li>
+      <li><b>Edita</b>Cambia el texto del PDF, escribe, dibuja, tapa o agrega firmas.</li>
+      <li><b>Digitaliza</b>Reconoce las letras de hojas escaneadas para poder cambiarlas.</li>
+      <li><b>Privado</b>Todo se hace en tu navegador; tus archivos no se suben.</li>
+    </ul>
 
     <p class="hint" id="hint" hidden>
       Bajo cada hoja: ↺ ↻ para girarla, ✎ para editarla (cambiar el texto que ya trae, escribir, dibujar, resaltar, tapar, imágenes o firmas; con zoom) y ✕ para eliminarla.
@@ -91,7 +108,7 @@
     </div>
     <div class="ed-note" id="ed-note" hidden>
       <span id="ed-note-text"></span>
-      <button class="btn small" id="ed-ocr" hidden title="Reconocer las letras de una hoja escaneada o hecha de imagen">Digitalizar</button>
+      <button class="btn small primary" id="ed-ocr" hidden title="Reconocer las letras de una hoja escaneada o hecha de imagen">Digitalizar</button>
     </div>
     <div class="editor-stage">
       <div class="editor-wrap" id="ed-wrap">
