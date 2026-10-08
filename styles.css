@@ -47,6 +47,9 @@ body {
 }
 
 .topbar h1 { margin: 0; font-size: 1.2rem; }
+.brand { display: flex; align-items: center; gap: 12px; }
+/* El logo va sobre blanco para que se vea también en modo oscuro. */
+.logo { height: 44px; width: auto; padding: 3px 6px; border-radius: 6px; background: #fff; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .summary { color: var(--muted); font-size: 0.9rem; margin-right: 4px; }
