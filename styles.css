@@ -231,7 +231,12 @@ main { max-width: 1200px; margin: 0 auto; padding: 16px; }
 #ed-overlay.move { cursor: move; }
 #ed-overlay.text { cursor: text; }
 .zoom-label { min-width: 58px; }
+.ed-note[hidden] { display: none; }
 .ed-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   padding: 6px 16px;
   font-size: 0.85rem;

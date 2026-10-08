@@ -4,7 +4,10 @@
   "use strict";
 
   pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
-  const { PDFDocument, PDFName, PDFArray, PDFRawStream, decodePDFRawStream, degrees } = PDFLib;
+  const {
+    PDFDocument, PDFName, PDFArray, PDFRawStream, decodePDFRawStream, degrees,
+    pushGraphicsState, popGraphicsState, concatTransformationMatrix, drawObject: drawXObject,
+  } = PDFLib;
 
   // Tamaño A4 en puntos para colocar las imágenes.
   const A4 = [595.28, 841.89];
@@ -530,6 +533,136 @@
     });
   }
 
+  // ---------- Digitalizar (reconocer letras de hojas que son imagen) ----------
+  // Usa Tesseract.js incluido en vendor/tesseract; se carga solo la primera vez que se usa.
+
+  let ocrWorker = null;
+  let ocrProgress = null;
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const el = document.createElement("script");
+      el.src = src;
+      el.onload = resolve;
+      el.onerror = () => reject(new Error("no se pudo cargar " + src));
+      document.head.appendChild(el);
+    });
+  }
+
+  function getOcrWorker() {
+    if (!ocrWorker) {
+      ocrWorker = (async () => {
+        await loadScript("vendor/tesseract/tesseract.min.js");
+        const base = new URL("vendor/tesseract/", location.href).href;
+        return Tesseract.createWorker("spa", 1, {
+          workerPath: base + "worker.min.js",
+          corePath: base,
+          langPath: base,
+          logger: (m) => m.status === "recognizing text" && ocrProgress?.(m.progress),
+        });
+      })();
+      ocrWorker.catch(() => (ocrWorker = null));
+    }
+    return ocrWorker;
+  }
+
+  let ocrSeq = 0;
+
+  // Reconoce las letras de la hoja (tal como se ve, sin las ediciones) y devuelve
+  // bloques de texto en el marco base, como los de textBlocks.
+  async function ocrPage(doc, index, removals, onProgress) {
+    const worker = await getOcrWorker();
+    const page = await pageFor(doc, index, removals);
+    const unit = page.getViewport({ scale: 1, rotation: page.rotate });
+    const scale = Math.min(5, 3200 / Math.max(unit.width, unit.height));
+    const viewport = page.getViewport({ scale, rotation: page.rotate });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    ocrProgress = onProgress;
+    let data;
+    try {
+      ({ data } = await worker.recognize(canvas, {}, { blocks: true, text: false }));
+    } finally {
+      ocrProgress = null;
+    }
+    const out = [];
+    for (const block of data.blocks || []) {
+      for (const para of block.paragraphs) {
+        for (const line of para.lines) out.push(...ocrLine(line, scale));
+      }
+    }
+    // Negrita: los textos con bastante más tinta (para su tamaño) que el resto de la hoja.
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    for (const o of out) {
+      const [x0, y0, x1, y1] = o.px;
+      let ink = 0;
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          const i = (y * canvas.width + x) * 4;
+          if (img[i] + img[i + 1] + img[i + 2] < 384) ink++;
+        }
+      }
+      o.ink = ink / Math.max(1, (x1 - x0) * o.size * scale);
+    }
+    const inks = out.map((o) => o.ink).sort((a, b) => a - b);
+    const median = inks[Math.floor(inks.length / 2)] || 0;
+    for (const o of out) {
+      o.font.bold = o.ink > median * 1.3;
+      delete o.px;
+      delete o.ink;
+    }
+    return out;
+  }
+
+  // Una línea reconocida se parte donde hay mucho espacio entre palabras (columnas, tablas).
+  function ocrLine(line, scale) {
+    const words = line.words.filter((w) => w.text.trim() && w.confidence > 50);
+    if (!words.length) return [];
+    const lineH = line.bbox.y1 - line.bbox.y0;
+    const groups = [];
+    for (const w of words) {
+      const g = groups[groups.length - 1];
+      if (g && w.bbox.x0 - g[g.length - 1].bbox.x1 < lineH * 1.2) g.push(w);
+      else groups.push([w]);
+    }
+    const b = line.baseline;
+    const slope = b.x1 !== b.x0 ? (b.y1 - b.y0) / (b.x1 - b.x0) : 0;
+    const angle = Math.abs(Math.atan(slope)) < 0.15 ? Math.atan(slope) : 0;
+    return groups.map((g) => {
+      const x0 = Math.min(...g.map((w) => w.bbox.x0));
+      const x1 = Math.max(...g.map((w) => w.bbox.x1));
+      const y0 = Math.min(...g.map((w) => w.bbox.y0));
+      const y1 = Math.max(...g.map((w) => w.bbox.y1));
+      const baseY = b.y0 + slope * (x0 - b.x0);
+      const text = g.map((w) => w.text).join(" ");
+      // Tamaño de letra a partir de lo que sube sobre la línea base: mayúsculas y números
+      // miden ~0.72 del tamaño; si solo hay minúsculas bajas, ~0.52.
+      const rise = Math.max(1, baseY - y0);
+      const size = rise / (/[A-ZÁÉÍÓÚÑ0-9bdfhklt]/.test(text) ? 0.72 : 0.52);
+      const pad = size * 0.12;
+      return {
+        id: `ocr${++ocrSeq}`,
+        ocr: true,
+        text,
+        removals: [],
+        size: size / scale,
+        px: [Math.round(x0), Math.round(y0), Math.round(x1), Math.round(y1)],
+        font: { family: FONT, bold: false, italic: false },
+        baseline: [x0 / scale, baseY / scale],
+        angle,
+        frame: {
+          x: (x0 - pad) / scale, y: (y0 - pad) / scale, angle: 0,
+          w: (x1 - x0 + pad * 2) / scale, h: (y1 - y0 + pad * 2) / scale,
+        },
+      };
+    });
+  }
+
   // ---------- Dibujo de las ediciones ----------
 
   const measureCtx = document.createElement("canvas").getContext("2d");
@@ -790,6 +923,8 @@
   const edSize = $("#ed-size");
   const edDelete = $("#ed-delete");
   const edNote = $("#ed-note");
+  const edNoteText = $("#ed-note-text");
+  const edOcr = $("#ed-ocr");
   const edZoomFit = $("#ed-zoom-fit");
   const edImageInput = $("#ed-image-input");
   const edCtx = edOverlay.getContext("2d");
@@ -800,6 +935,7 @@
     objects: [],
     removals: [], // textos originales del PDF quitados en esta edición
     blocks: null, // textos detectados en la hoja (herramienta "Editar texto")
+    ocrBlocks: [], // textos reconocidos con "Digitalizar"
     undo: [],
     tool: "pen",
     // Cada herramienta recuerda su color.
@@ -848,6 +984,7 @@
         objects: cloneObjects(state.edits),
         removals: state.textRemovals.slice(),
         blocks: null,
+        ocrBlocks: state.ocr || [],
         undo: [],
         selected: null,
         drag: null,
@@ -940,9 +1077,10 @@
     setZoom(ed.zoom * Math.exp(-e.deltaY * 0.002), e.clientX, e.clientY);
   }, { passive: false });
 
-  function setNote(text) {
-    edNote.textContent = text;
+  function setNote(text, ocrButton = false) {
+    edNoteText.textContent = text;
     edNote.hidden = !text;
+    edOcr.hidden = !ocrButton;
   }
 
   function closeEditor() {
@@ -990,10 +1128,40 @@
   }
 
   function noteBlocks() {
-    setNote(ed.blocks.length
-      ? "Haz clic en un texto marcado en azul para cambiarlo. Si lo dejas vacío, se borra."
-      : "No se encontró texto editable en esta hoja (puede ser una imagen o un escaneo). Usa Tapar y Texto.");
+    if (ed.ocrBlocks.length) {
+      setNote("Haz clic en un texto marcado en azul para cambiarlo. Revisa lo digitalizado: puede tener errores.");
+    } else if (ed.blocks.length) {
+      setNote("Haz clic en un texto marcado en azul para cambiarlo. Si lo dejas vacío, se borra. ¿Falta algún texto?", true);
+    } else {
+      setNote("Esta hoja no trae texto (es una imagen, un escaneo o letras dibujadas). Puedes digitalizarla para reconocer las letras.", true);
+    }
   }
+
+  edOcr.addEventListener("click", async () => {
+    const { doc, index } = ed;
+    commitText();
+    edOcr.disabled = true;
+    setNote("Preparando el reconocimiento de letras…");
+    try {
+      const found = await ocrPage(doc, index, ed.removals, (p) => {
+        if (ed.doc === doc) setNote(`Digitalizando la hoja… ${Math.round(p * 100)}%`);
+      });
+      // Lo que ya es texto del PDF no se repite.
+      const blocks = found.filter((o) => !(ed.blocks || []).some((b) =>
+        inFrame(b.frame, o.frame.x + o.frame.w / 2, o.frame.y + o.frame.h / 2)));
+      doc.pages[index].ocr = blocks;
+      if (ed.doc !== doc || ed.index !== index) return;
+      ed.ocrBlocks = blocks;
+      if (blocks.length) noteBlocks();
+      else setNote("No se reconoció ninguna letra en esta hoja.");
+    } catch (err) {
+      console.error(err);
+      if (ed.doc === doc) setNote("No se pudo digitalizar la hoja: " + err.message);
+    } finally {
+      edOcr.disabled = false;
+      redraw();
+    }
+  });
 
   function select(obj) {
     ed.selected = obj;
@@ -1041,7 +1209,9 @@
   function liveBlocks() {
     if (!ed.blocks) return [];
     const gone = new Set(ed.removals.map((r) => r.op));
-    return ed.blocks.filter((b) => !b.removals.some((r) => gone.has(r.op)));
+    const covered = new Set(ed.objects.map((o) => o.fromBlock).filter(Boolean));
+    return ed.blocks.filter((b) => !b.removals.some((r) => gone.has(r.op)))
+      .concat(ed.ocrBlocks.filter((b) => !covered.has(b.id)));
   }
 
   function strokeFrame(f, color, dash) {
@@ -1225,8 +1395,8 @@
     else { o.x += dx; o.y += dy; }
   }
 
-  // Color del texto original: el píxel más oscuro dentro de su caja en la hoja dibujada.
-  function sampleColor(frame) {
+  // Píxeles de la hoja dibujada dentro de una caja del marco base.
+  function framePixels(frame) {
     const corners = [[0, 0], [frame.w, 0], [0, frame.h], [frame.w, frame.h]].map(([lx, ly]) =>
       apply(ed.toCanvas,
         frame.x + lx * Math.cos(frame.angle) - ly * Math.sin(frame.angle),
@@ -1237,15 +1407,43 @@
     const y0 = Math.max(0, Math.floor(Math.min(...ys)));
     const w = Math.min(edBg.width, Math.ceil(Math.max(...xs))) - x0;
     const h = Math.min(edBg.height, Math.ceil(Math.max(...ys))) - y0;
-    if (w < 1 || h < 1) return "#000000";
-    const px = edBg.getContext("2d").getImageData(x0, y0, w, h).data;
+    if (w < 1 || h < 1) return null;
+    return edBg.getContext("2d").getImageData(x0, y0, w, h).data;
+  }
+
+  const hex = (r, g, b) => "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+
+  // Color del fondo: el más repetido dentro de la caja (las letras son minoría).
+  function sampleBackground(frame) {
+    const px = framePixels(frame);
+    if (!px) return "#ffffff";
+    const count = new Map();
+    let best = 0;
+    let color = "#ffffff";
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i + 3] < 200) continue;
+      const key = ((px[i] >> 3) << 10) | ((px[i + 1] >> 3) << 5) | (px[i + 2] >> 3);
+      const n = (count.get(key) || 0) + 1;
+      count.set(key, n);
+      if (n > best) {
+        best = n;
+        color = hex(px[i], px[i + 1], px[i + 2]);
+      }
+    }
+    return color;
+  }
+
+  // Color del texto original: el píxel más oscuro dentro de su caja en la hoja dibujada.
+  function sampleColor(frame) {
+    const px = framePixels(frame);
+    if (!px) return "#000000";
     let best = 765;
     let color = "#000000";
     for (let i = 0; i < px.length; i += 4) {
       const lum = px[i] + px[i + 1] + px[i + 2];
       if (px[i + 3] > 200 && lum < best) {
         best = lum;
-        color = "#" + [px[i], px[i + 1], px[i + 2]].map((v) => v.toString(16).padStart(2, "0")).join("");
+        color = hex(px[i], px[i + 1], px[i + 2]);
       }
     }
     return best > 600 ? "#000000" : color;
@@ -1316,7 +1514,22 @@
     ed.textInput = null;
     const text = t.ta.value.replace(/\s+$/, "");
     t.ta.remove();
-    if (t.block) {
+    if (t.block?.ocr) {
+      // Un texto digitalizado es parte de la imagen: se cubre con el color del fondo.
+      if (!cancel && text !== t.block.text) {
+        pushUndo();
+        const f = t.block.frame;
+        ed.objects.push({
+          type: "rect", x: f.x - 1, y: f.y - 1, w: f.w + 2, h: f.h + 2,
+          color: sampleBackground(f), alpha: 1, fromBlock: t.block.id,
+        });
+        if (text) {
+          t.obj.text = text;
+          t.obj.fromBlock = t.block.id;
+          ed.objects.push(t.obj);
+        }
+      }
+    } else if (t.block) {
       // Solo si el texto cambió se quita el original del PDF.
       if (!cancel && text !== t.block.text) {
         pushUndo();
@@ -1458,19 +1671,50 @@
 
   // ---------- Unir e imprimir ----------
 
-  // Dibuja las ediciones de una hoja en un PNG transparente que cubre la hoja sin girar.
-  async function editsToPng(doc, index) {
+  // Dibuja las ediciones de una hoja en una imagen transparente que cubre la hoja sin girar.
+  // Se incrusta a mano (color + máscara de transparencia) en vez de como PNG: en el PNG los
+  // píxeles transparentes son negros y algunos visores dejan un borde gris alrededor de lo tapado.
+  async function drawEdits(out, page, doc, index) {
     const pdfPage = await doc.pdfjs.getPage(index + 1);
     const unit = pdfPage.getViewport({ scale: 1, rotation: 0 });
     const scale = Math.min(4, EXPORT_MAX_PX / Math.max(unit.width, unit.height));
     const viewport = pdfPage.getViewport({ scale, rotation: 0 });
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.ceil(viewport.width);
-    canvas.height = Math.ceil(viewport.height);
-    drawObjects(canvas.getContext("2d"), doc.pages[index].edits, baseTo(pdfPage, viewport));
-    const blob = await new Promise((r) => canvas.toBlob(r, "image/png"));
+    const w = Math.ceil(viewport.width);
+    const h = Math.ceil(viewport.height);
+    const layer = document.createElement("canvas");
+    layer.width = w;
+    layer.height = h;
+    drawObjects(layer.getContext("2d"), doc.pages[index].edits, baseTo(pdfPage, viewport));
+    const alpha = layer.getContext("2d").getImageData(0, 0, w, h).data;
+    // Color: las ediciones sobre blanco, así los bordes y lo transparente quedan claros.
+    const flat = document.createElement("canvas");
+    flat.width = w;
+    flat.height = h;
+    const fctx = flat.getContext("2d");
+    fctx.fillStyle = "#fff";
+    fctx.fillRect(0, 0, w, h);
+    fctx.drawImage(layer, 0, 0);
+    const color = fctx.getImageData(0, 0, w, h).data;
+    const rgb = new Uint8Array(w * h * 3);
+    const mask = new Uint8Array(w * h);
+    for (let i = 0, j = 0, k = 0; i < color.length; i += 4, j += 3, k++) {
+      rgb[j] = color[i];
+      rgb[j + 1] = color[i + 1];
+      rgb[j + 2] = color[i + 2];
+      mask[k] = alpha[i + 3];
+    }
+    const ctx = out.context;
+    const image = { Type: "XObject", Subtype: "Image", Width: w, Height: h, BitsPerComponent: 8 };
+    const smask = ctx.register(ctx.flateStream(mask, { ...image, ColorSpace: "DeviceGray" }));
+    const ref = ctx.register(ctx.flateStream(rgb, { ...image, ColorSpace: "DeviceRGB", SMask: smask }));
+    const name = page.node.newXObject("Ed", ref);
     const [x1, y1, x2, y2] = pdfPage.view;
-    return { bytes: new Uint8Array(await blob.arrayBuffer()), x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
+    page.pushOperators(
+      pushGraphicsState(),
+      concatTransformationMatrix(x2 - x1, 0, 0, y2 - y1, x1, y1),
+      drawXObject(name),
+      popGraphicsState()
+    );
   }
 
   async function buildMergedPdf() {
@@ -1487,9 +1731,7 @@
           setContents(out, page, contentWithout(await pageContent(doc, keep[k]), state.textRemovals));
         }
         if (state.edits.length) {
-          const png = await editsToPng(doc, keep[k]);
-          const img = await out.embedPng(png.bytes);
-          page.drawImage(img, { x: png.x, y: png.y, width: png.width, height: png.height });
+          await drawEdits(out, page, doc, keep[k]);
         }
         if (state.rotation) {
           page.setRotation(degrees((page.getRotation().angle + state.rotation) % 360));

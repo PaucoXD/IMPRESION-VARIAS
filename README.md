@@ -12,6 +12,7 @@ App web para juntar varios archivos (PDF e imágenes), quitar las hojas que no q
    - **✕** para eliminarla (otro clic la restaura). También puedes escribir un rango en "Eliminar hojas" (ej. `2, 4-6`).
 4. En el **editor** puedes:
    - **Editar texto**: se marcan en azul los textos que ya trae el PDF; clic en uno para cambiarlo (si lo dejas vacío, se borra). El texto original se quita de verdad del PDF, no solo se tapa.
+     Si la hoja es una imagen, un escaneo o tiene las letras dibujadas, pulsa **Digitalizar** para reconocer las letras (en tu navegador, sin conexión) y poder cambiarlas; en ese caso el texto viejo se cubre con el color del fondo.
    - **Texto**: clic donde quieras escribir y Enter para terminar (Mayús+Enter para otra línea). Clic sobre un texto para cambiarlo.
    - **Dibujar** a mano alzada, **Resaltar** (arrastrando) y **Tapar** con blanco (para ocultar algo).
    - **Imagen**: insertar una imagen o firma; luego muévela con **Mover**.
@@ -30,3 +31,4 @@ Las imágenes se colocan en una hoja A4 (vertical u horizontal según la imagen)
 Incluidas en `vendor/`:
 - [pdf.js](https://github.com/mozilla/pdf.js) 3.11.174 (Apache-2.0) — miniaturas, editor y detección del texto.
 - [pdf-lib](https://github.com/Hopding/pdf-lib) 1.17.1 (MIT) — unir PDFs, eliminar, girar y aplicar las ediciones.
+- [Tesseract.js](https://github.com/naptha/tesseract.js) 5.1.1 y tesseract.js-core 5.1.1 (Apache-2.0), con el idioma español de [tessdata](https://github.com/tesseract-ocr/tessdata_best) (Apache-2.0) — Digitalizar. Se carga solo al usarlo.
