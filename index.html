@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Impresión Varias</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Impresión Varias</h1>
+    <div class="actions">
+      <span id="summary" class="summary">Sin archivos</span>
+      <button id="btn-clear" class="btn ghost" disabled>Vaciar</button>
+      <button id="btn-download" class="btn" disabled>Descargar PDF</button>
+      <button id="btn-print" class="btn primary" disabled>Imprimir todo</button>
+    </div>
+  </header>
+
+  <main>
+    <label id="dropzone" class="dropzone" for="file-input">
+      <input id="file-input" type="file" multiple accept="application/pdf,image/*">
+      <strong>Arrastra aquí tus archivos</strong>
+      <span>o haz clic para elegirlos — PDF, JPG, PNG, WEBP, GIF…</span>
+    </label>
+
+    <p class="hint" id="hint" hidden>
+      Haz clic en una hoja para eliminarla (o restaurarla). Las hojas tachadas no se imprimen.
+    </p>
+
+    <section id="docs" class="docs"></section>
+  </main>
+
+  <div id="busy" class="busy" hidden><div class="spinner"></div><span id="busy-text">Procesando…</span></div>
+  <iframe id="print-frame" class="print-frame" title="Impresión"></iframe>
+
+  <template id="doc-template">
+    <article class="doc">
+      <div class="doc-head">
+        <div class="doc-title">
+          <span class="doc-name"></span>
+          <span class="doc-count"></span>
+        </div>
+        <div class="doc-tools">
+          <input class="range-input" type="text" placeholder="Eliminar hojas: ej. 2, 4-6">
+          <button class="btn small" data-act="range">Eliminar</button>
+          <button class="btn small ghost" data-act="restore">Restaurar todas</button>
+          <button class="btn small ghost" data-act="up" title="Subir">↑</button>
+          <button class="btn small ghost" data-act="down" title="Bajar">↓</button>
+          <button class="btn small danger" data-act="remove" title="Quitar archivo">Quitar</button>
+        </div>
+      </div>
+      <div class="pages"></div>
+    </article>
+  </template>
+
+  <script src="vendor/pdf.min.js"></script>
+  <script src="vendor/pdf-lib.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
