@@ -113,7 +113,8 @@
           renderDoc(doc);
         } catch (err) {
           console.error(err);
-          failed.push(file.name);
+          if (err.userMessage) alert(err.userMessage);
+          else failed.push(file.name);
         }
       }
     } finally {
@@ -122,7 +123,7 @@
     }
     if (failed.length) {
       alert("No se pudieron abrir estos archivos:\n\n" + failed.join("\n") +
-        "\n\nSolo se admiten PDF e imágenes (PDF protegidos con contraseña no son compatibles).");
+        "\n\nSolo se admiten PDF e imágenes.");
     }
   }
 
@@ -131,7 +132,9 @@
     const isImage = file.type.startsWith("image/");
     if (!isPdf && !isImage) throw new Error("Tipo no soportado: " + file.type);
 
-    const bytes = isPdf ? new Uint8Array(await file.arrayBuffer()) : await imageToPdf(file);
+    let bytes = isPdf ? new Uint8Array(await file.arrayBuffer()) : await imageToPdf(file);
+    // PDF con contraseña: se pide y se quita (seguridad.js), así se puede unir y editar.
+    if (isPdf) bytes = await PdfSeguridad.unlockForApp(bytes, file.name);
     // pdf.js se queda con el buffer que recibe, así que le pasamos una copia.
     const pdfjs = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
     const pages = [];

@@ -12,6 +12,11 @@ Al abrir la página se ve la lista de herramientas (como iLovePDF). Todas trabaj
 - **PDF a JPG**: cada hoja como imagen JPG (150 o 300 ppp).
 - **Marca de agua**: texto en diagonal, al centro, arriba o abajo, con color, tamaño y transparencia.
 - **Números de página**: posición, formato (`1`, `Página 1 de 9`, `1 / 9`…), desde qué hoja y con qué número empezar.
+- **Ordenar páginas**: arrastra las hojas (aunque vengan de archivos distintos) o usa ◀ ▶. En el celular, mantén el dedo sobre la hoja y luego muévela.
+- **Recortar PDF**: quita los márgenes en blanco automáticamente o los milímetros que elijas de cada lado.
+- **Censurar PDF**: busca un texto para tacharlo en todas las hojas o arrastra sobre la hoja. Las hojas censuradas se guardan como imagen para que lo tapado no se pueda recuperar.
+- **Proteger PDF**: contraseña con cifrado AES de 256 bits.
+- **Desbloquear PDF**: al agregar un PDF con contraseña la app la pide y la quita (RC4 40/128, AES-128 y AES-256); al descargarlo queda sin contraseña. Los PDF con restricciones pero sin contraseña para abrir se desbloquean solos.
 
 ## Uso
 
@@ -35,7 +40,7 @@ Al abrir la página se ve la lista de herramientas (como iLovePDF). Todas trabaj
 
 Todo se procesa en tu navegador: los archivos no se suben a ningún servidor y funciona sin conexión.
 
-Las imágenes se colocan en una hoja A4 (vertical u horizontal según la imagen). Los PDF protegidos con contraseña no son compatibles.
+Las imágenes se colocan en una hoja A4 (vertical u horizontal según la imagen).
 
 ## Librerías
 
