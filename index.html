@@ -24,11 +24,11 @@
   <meta name="twitter:image" content="https://paucoxd.github.io/IMPRESION-VARIAS/og.jpg">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
-  <link rel="stylesheet" href="styles.css?v=20261008">
+  <link rel="stylesheet" href="styles.css?v=20261008b">
 </head>
-<body>
+<body class="view-home">
   <header class="topbar">
-    <div class="brand">
+    <a class="brand" href="#" title="Ver todas las herramientas">
       <picture>
         <source srcset="logo-oscuro.png" media="(prefers-color-scheme: dark)">
         <img class="logo" src="logo.png" alt="A&amp;C Group" width="223" height="160">
@@ -37,7 +37,7 @@
         <h1>Impresión Varias</h1>
         <span class="tagline">Junta, edita e imprime tus documentos</span>
       </div>
-    </div>
+    </a>
     <div class="actions">
       <span id="summary" class="summary">Sin archivos</span>
       <button id="btn-clear" class="btn ghost" disabled>Vaciar</button>
@@ -47,29 +47,42 @@
   </header>
 
   <main>
-    <label id="dropzone" class="dropzone" for="file-input">
-      <input id="file-input" type="file" multiple accept="application/pdf,image/*">
-      <svg class="drop-icon" width="48" height="48" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"
-          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <strong>Arrastra aquí tus archivos</strong>
-      <span>o <u>haz clic para elegirlos</u> · PDF, JPG, PNG, WEBP, GIF…</span>
-    </label>
+    <section id="home" class="home">
+      <h2>Herramientas para tus PDF</h2>
+      <p class="home-sub">Junta, divide, comprime, convierte, edita e imprime tus documentos.
+        Gratis y privado: todo se hace en tu navegador, tus archivos no se suben.</p>
+      <nav id="tool-chips" class="chips" aria-label="Categorías"></nav>
+      <div id="tools-grid" class="tools-grid"></div>
+    </section>
 
-    <ul class="features" id="features">
-      <li><b>Junta</b>Varios PDF e imágenes en un solo trabajo de impresión.</li>
-      <li><b>Edita</b>Cambia el texto del PDF, escribe, dibuja, tapa o agrega firmas.</li>
-      <li><b>Digitaliza</b>Reconoce las letras de hojas escaneadas para poder cambiarlas.</li>
-      <li><b>Privado</b>Todo se hace en tu navegador; tus archivos no se suben.</li>
-    </ul>
+    <section id="workspace" class="workspace">
+      <div id="tool-head" class="tool-head">
+        <a class="back" href="#">← Todas las herramientas</a>
+        <div class="tool-title">
+          <span class="tool-icon"></span>
+          <div><h2></h2><p></p></div>
+        </div>
+      </div>
 
-    <p class="hint" id="hint" hidden>
-      Bajo cada hoja: ↺ ↻ para girarla, ✎ para editarla (cambiar el texto que ya trae, escribir, dibujar, resaltar, tapar, imágenes o firmas; con zoom) y ✕ para eliminarla.
-      Las hojas eliminadas no se imprimen.
-    </p>
+      <label id="dropzone" class="dropzone" for="file-input">
+        <input id="file-input" type="file" multiple accept="application/pdf,image/*">
+        <svg class="drop-icon" width="48" height="48" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"
+            fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <strong>Arrastra aquí tus archivos</strong>
+        <span>o <u>haz clic para elegirlos</u> · <span id="drop-formats">PDF, JPG, PNG, WEBP, GIF…</span></span>
+      </label>
 
-    <section id="docs" class="docs"></section>
+      <section id="tool-panel" class="tool-panel" hidden></section>
+
+      <p class="hint" id="hint" hidden>
+        Bajo cada hoja: ↺ ↻ para girarla, ✎ para editarla (cambiar el texto que ya trae, escribir, dibujar, resaltar, tapar, imágenes o firmas; con zoom) y ✕ para eliminarla.
+        Las hojas eliminadas no se imprimen.
+      </p>
+
+      <section id="docs" class="docs"></section>
+    </section>
   </main>
 
   <div id="busy" class="busy" hidden><div class="spinner"></div><span id="busy-text">Procesando…</span></div>
@@ -140,6 +153,7 @@
 
   <script src="vendor/pdf.min.js"></script>
   <script src="vendor/pdf-lib.min.js"></script>
-  <script src="app.js?v=20261008"></script>
+  <script src="app.js?v=20261008b"></script>
+  <script src="tools.js?v=20261008b"></script>
 </body>
 </html>

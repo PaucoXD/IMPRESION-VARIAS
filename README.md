@@ -2,6 +2,19 @@
 
 App web para juntar varios archivos (PDF e imágenes), quitar las hojas que no quieras e imprimir todo de una sola vez.
 
+## Herramientas
+
+Al abrir la página se ve la lista de herramientas (como iLovePDF). Todas trabajan con los archivos de la lista, ya con las hojas eliminadas, giradas y editadas:
+
+- **Unir e imprimir**, **Eliminar páginas**, **Rotar PDF**, **Editar PDF**, **Firmar PDF**, **Digitalizar (OCR)** y **JPG a PDF**: se hacen en la lista de hojas (ver *Uso*).
+- **Dividir PDF**: cada hoja en un PDF aparte, por rangos (`1-3, 4-6`) o extraer hojas en un solo PDF. Si salen varios, se descargan en un ZIP.
+- **Comprimir PDF**: tres niveles. Las hojas se guardan como imagen, así que las letras dejan de ser seleccionables.
+- **PDF a JPG**: cada hoja como imagen JPG (150 o 300 ppp).
+- **Marca de agua**: texto en diagonal, al centro, arriba o abajo, con color, tamaño y transparencia.
+- **Números de página**: posición, formato (`1`, `Página 1 de 9`, `1 / 9`…), desde qué hoja y con qué número empezar.
+
+Marcadas como *Pronto*: ordenar páginas, recortar, censurar, proteger y desbloquear.
+
 ## Uso
 
 1. Ábrela en https://paucoxd.github.io/IMPRESION-VARIAS/ (o abre `index.html` directamente en el navegador).

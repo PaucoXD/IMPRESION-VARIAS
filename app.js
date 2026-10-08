@@ -910,6 +910,7 @@
     btnClear.disabled = docs.length === 0;
     hintEl.hidden = docs.length === 0;
     document.body.classList.toggle("has-docs", docs.length > 0);
+    document.dispatchEvent(new CustomEvent("docs-change", { detail: { files: docs.length, pages: kept } }));
   }
 
   // ---------- Editor de hojas ----------
@@ -1801,6 +1802,16 @@
   function hideBusy() {
     busyEl.hidden = true;
   }
+
+  // Lo que usan las herramientas (tools.js): todas trabajan sobre el PDF unido, con las hojas
+  // eliminadas, giradas y editadas tal como están en la lista.
+  window.ImpresionApp = {
+    addFiles,
+    buildMergedPdf,
+    showBusy,
+    hideBusy,
+    fileNames: () => docs.map((d) => d.name),
+  };
 
   updateSummary();
 })();

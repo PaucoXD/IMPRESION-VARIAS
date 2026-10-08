@@ -71,7 +71,7 @@ body {
   background: linear-gradient(90deg, var(--navy) 0 70%, var(--green) 70%);
 }
 
-.brand { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.brand { display: flex; align-items: center; gap: 16px; min-width: 0; color: inherit; text-decoration: none; }
 .logo { display: block; height: 58px; width: auto; }
 .brand-text { display: flex; flex-direction: column; padding-left: 16px; border-left: 1px solid var(--border); }
 .topbar h1 { margin: 0; font-size: 1.25rem; line-height: 1.2; letter-spacing: -0.01em; }
@@ -169,6 +169,125 @@ main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
 .has-docs .features { display: none; }
 
 .hint { color: var(--muted); font-size: 0.88rem; margin: 14px 2px 0; }
+
+/* ---------- Inicio: herramientas ---------- */
+
+.view-home .workspace, .view-tool .home { display: none; }
+/* En el inicio sin archivos no hay nada que imprimir ni descargar. */
+.view-home:not(.has-docs) .actions { display: none; }
+.tool-panel input[type="range"], .tool-panel input[type="radio"] { accent-color: var(--primary); }
+
+.home { text-align: center; padding-top: 8px; }
+.home h2 { margin: 8px 0 6px; font-size: clamp(1.5rem, 3.4vw, 2.1rem); letter-spacing: -0.02em; color: var(--navy); }
+.home-sub { max-width: 640px; margin: 0 auto 18px; color: var(--muted); line-height: 1.5; }
+
+.chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 22px; }
+.chip {
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--primary); color: var(--primary); }
+.chip.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  text-align: left;
+}
+.tool-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 18px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+a.tool-card:hover, a.tool-card:focus-visible {
+  border-color: var(--tool-color);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(16, 24, 64, 0.12);
+  outline: none;
+}
+.tool-card strong { font-size: 1.02rem; margin-top: 6px; }
+.tool-desc { color: var(--muted); font-size: 0.86rem; line-height: 1.45; }
+.tool-card.soon { opacity: 0.6; }
+.soon-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--green) 18%, transparent);
+  color: var(--accent);
+}
+.tool-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  color: #fff;
+  background: var(--tool-color, var(--primary));
+}
+
+/* ---------- Herramienta abierta ---------- */
+
+.tool-head { margin-bottom: 16px; }
+.back { display: inline-block; margin-bottom: 10px; color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+.back:hover { text-decoration: underline; }
+.tool-title { display: flex; align-items: center; gap: 14px; }
+.tool-title h2 { margin: 0; font-size: 1.35rem; letter-spacing: -0.01em; }
+.tool-title p { margin: 2px 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.4; }
+
+.tool-panel {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--green);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.tool-panel[hidden] { display: none; }
+.panel-form { display: flex; flex-direction: column; gap: 14px; }
+.opt-group { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.opt-group legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
+.opt { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; cursor: pointer; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 0.88rem; font-weight: 500; }
+.field[hidden] { display: none; }
+.field input[type="text"], .field input[type="number"], .field select {
+  font: inherit;
+  font-weight: 400;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  max-width: 340px;
+}
+.field input[type="color"] { width: 46px; height: 32px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: none; }
+.field-row { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; }
+.field-row .field input[type="number"] { width: 110px; }
+.panel-note { margin: 0; color: var(--muted); font-size: 0.85rem; line-height: 1.45; }
+.panel-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.panel-result { color: var(--accent); font-size: 0.9rem; font-weight: 500; }
 
 /* ---------- Documentos y hojas ---------- */
 
@@ -403,6 +522,13 @@ main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
 
 @media (max-width: 600px) {
   main { padding: 16px 12px 40px; }
+  .tools-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tool-card { padding: 14px 12px; gap: 4px; }
+  .tool-card strong { font-size: 0.95rem; margin-top: 4px; }
+  .tool-desc { font-size: 0.8rem; }
+  .tool-icon { width: 36px; height: 36px; border-radius: 10px; }
+  .soon-badge { top: 10px; right: 10px; }
+  .chips { gap: 6px; }
   .pages { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
   .doc { padding: 12px; }
   .editor-title { max-width: 100%; }
