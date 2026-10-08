@@ -537,6 +537,93 @@ a.tool-card:hover, a.tool-card:focus-visible {
   .range-input { width: 100%; }
 }
 
+/* ---------- Ordenar y censurar ---------- */
+
+.own-view .docs, .own-view .hint { display: none; }
+.panel-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.sort-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 14px;
+}
+.sort-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.sort-item.moved { border-color: var(--green); }
+.sort-item.dragging { opacity: 0.45; pointer-events: none; outline: 2px dashed var(--primary); }
+.sort-thumb {
+  aspect-ratio: 0.75;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.sort-thumb canvas, .redact-canvas canvas { display: block; max-width: 100%; max-height: 100%; }
+.sort-bar { display: flex; align-items: center; justify-content: space-between; }
+.sort-num { font-weight: 600; font-size: 0.88rem; }
+
+.redact-pages { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.redact-page {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(16, 24, 64, 0.18);
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.redact-canvas, .redact-boxes { position: absolute; inset: 0; }
+.redact-canvas canvas { width: 100%; height: 100%; max-width: none; max-height: none; }
+.redact-box { position: absolute; background: rgba(0, 0, 0, 0.82); outline: 1px solid #000; }
+.redact-x {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.redact-num {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  background: rgba(4, 26, 113, 0.85);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.field input[type="password"] {
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  max-width: 340px;
+}
 /* Glosa: palomita, tache y nota en rojo */
 .tool.glosa { font-size: 1rem; font-weight: 700; min-width: 36px; }
 .tool.glosa:not(.active) { color: #e11d2a; }
