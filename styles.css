@@ -123,13 +123,15 @@ main { max-width: 1200px; margin: 0 auto; padding: 16px; }
 
 .pages {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
 }
 
-.page {
+.page { display: flex; flex-direction: column; gap: 6px; }
+
+.thumb {
   position: relative;
-  padding: 0;
+  padding: 4px;
   border: 2px solid var(--border);
   border-radius: 8px;
   background: #fff;
@@ -140,43 +142,106 @@ main { max-width: 1200px; margin: 0 auto; padding: 16px; }
   align-items: center;
   justify-content: center;
 }
-.page:hover { border-color: var(--primary); }
-.page canvas, .page img { max-width: 100%; max-height: 100%; display: block; }
-.page .num {
+.thumb:hover { border-color: var(--primary); }
+.thumb canvas { max-width: 100%; max-height: 100%; display: block; box-shadow: 0 0 0 1px #e5e7eb; }
+.thumb .num, .thumb .badge {
   position: absolute;
   bottom: 4px;
-  left: 4px;
   background: rgba(0, 0, 0, 0.65);
   color: #fff;
   font-size: 0.75rem;
   padding: 1px 6px;
   border-radius: 4px;
 }
-.page .x {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--danger);
-  color: #fff;
-  font-size: 0.8rem;
-  line-height: 22px;
-  text-align: center;
-  opacity: 0;
-}
-.page:hover .x { opacity: 1; }
+.thumb .num { left: 4px; }
+.thumb .badge { right: 4px; background: var(--primary); }
+.thumb .badge:empty { display: none; }
 
-.page.removed { border-color: var(--danger); background: var(--removed); }
-.page.removed canvas, .page.removed img { opacity: 0.25; }
-.page.removed .x { opacity: 1; background: #16a34a; }
-.page.removed::after {
+.page.removed .thumb { border-color: var(--danger); background: var(--removed); }
+.page.removed .thumb canvas { opacity: 0.25; }
+.page.removed .thumb::after {
   content: "Eliminada";
   position: absolute;
   color: var(--danger);
   font-weight: 700;
   font-size: 0.85rem;
+}
+
+.page-tools { display: flex; justify-content: center; gap: 4px; }
+.icon-btn {
+  font: inherit;
+  font-size: 0.95rem;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.icon-btn:hover { border-color: var(--primary); }
+.icon-btn.del { color: var(--danger); }
+.page.removed .icon-btn.del { color: #16a34a; }
+
+/* ---------- Editor ---------- */
+
+.editor {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.editor[hidden] { display: none; }
+
+.editor-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.editor-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.editor-title { font-weight: 600; font-size: 0.95rem; margin-right: 6px; }
+.tool.active { background: var(--primary); border-color: var(--primary); color: var(--primary-text); }
+.editor-bar label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); }
+.editor-bar input[type="color"] { width: 34px; height: 30px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: none; }
+.editor-bar input[type="range"] { width: 90px; }
+
+.editor-stage {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  padding: 16px;
+}
+.editor-wrap {
+  position: relative;
+  margin: auto;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  background: #fff;
+}
+.editor-wrap canvas { display: block; }
+#ed-overlay { position: absolute; inset: 0; touch-action: none; cursor: crosshair; }
+#ed-overlay.move { cursor: move; }
+#ed-overlay.text { cursor: text; }
+
+.ed-text {
+  position: absolute;
+  z-index: 2;
+  min-width: 120px;
+  margin: 0;
+  padding: 0;
+  border: 1px dashed var(--primary);
+  background: rgba(255, 255, 255, 0.85);
+  font-family: Helvetica, Arial, sans-serif;
+  line-height: 1.2;
+  resize: both;
+  outline: none;
 }
 
 .busy {
@@ -214,6 +279,8 @@ main { max-width: 1200px; margin: 0 auto; padding: 16px; }
 }
 
 @media (max-width: 600px) {
-  .pages { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+  .pages { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+  .editor-bar { padding: 8px; }
+  .editor-stage { padding: 8px; }
   .range-input { width: 100%; }
 }

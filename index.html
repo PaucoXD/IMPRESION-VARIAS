@@ -25,7 +25,8 @@
     </label>
 
     <p class="hint" id="hint" hidden>
-      Haz clic en una hoja para eliminarla (o restaurarla). Las hojas tachadas no se imprimen.
+      Bajo cada hoja: ↺ ↻ para girarla, ✎ para editarla (texto, dibujo, resaltar, tapar, imágenes o firmas) y ✕ para eliminarla.
+      Las hojas eliminadas no se imprimen.
     </p>
 
     <section id="docs" class="docs"></section>
@@ -45,6 +46,7 @@
           <input class="range-input" type="text" placeholder="Eliminar hojas: ej. 2, 4-6">
           <button class="btn small" data-act="range">Eliminar</button>
           <button class="btn small ghost" data-act="restore">Restaurar todas</button>
+          <button class="btn small ghost" data-act="rotate-all" title="Girar todas las hojas">↻ Girar todas</button>
           <button class="btn small ghost" data-act="up" title="Subir">↑</button>
           <button class="btn small ghost" data-act="down" title="Bajar">↓</button>
           <button class="btn small danger" data-act="remove" title="Quitar archivo">Quitar</button>
@@ -53,6 +55,38 @@
       <div class="pages"></div>
     </article>
   </template>
+
+  <div id="editor" class="editor" hidden>
+    <div class="editor-bar">
+      <div class="editor-group">
+        <span class="editor-title" id="ed-title">Editar hoja</span>
+        <button class="btn small tool" data-tool="move" title="Seleccionar y mover elementos">Mover</button>
+        <button class="btn small tool" data-tool="text" title="Clic en la hoja para escribir">Texto</button>
+        <button class="btn small tool" data-tool="pen" title="Dibujar a mano alzada">Dibujar</button>
+        <button class="btn small tool" data-tool="highlight" title="Arrastra para resaltar">Resaltar</button>
+        <button class="btn small tool" data-tool="whiteout" title="Arrastra para tapar con blanco">Tapar</button>
+        <button class="btn small tool" data-tool="image" title="Insertar imagen o firma">Imagen</button>
+      </div>
+      <div class="editor-group">
+        <label>Color <input type="color" id="ed-color" value="#000000"></label>
+        <label>Tamaño <input type="range" id="ed-size" min="6" max="72" value="16"></label>
+        <button class="btn small ghost" id="ed-delete" disabled title="Borrar el elemento seleccionado (Supr)">Borrar elemento</button>
+        <button class="btn small ghost" id="ed-undo" title="Deshacer (Ctrl+Z)">Deshacer</button>
+        <button class="btn small ghost" id="ed-clear">Borrar todo</button>
+      </div>
+      <div class="editor-group">
+        <button class="btn small ghost" id="ed-cancel">Cancelar</button>
+        <button class="btn small primary" id="ed-save">Guardar</button>
+      </div>
+    </div>
+    <div class="editor-stage">
+      <div class="editor-wrap" id="ed-wrap">
+        <canvas id="ed-bg"></canvas>
+        <canvas id="ed-overlay"></canvas>
+      </div>
+    </div>
+    <input type="file" id="ed-image-input" accept="image/*" hidden>
+  </div>
 
   <script src="vendor/pdf.min.js"></script>
   <script src="vendor/pdf-lib.min.js"></script>
