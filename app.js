@@ -705,6 +705,27 @@
       ctx.translate(obj.x, obj.y);
       ctx.rotate(obj.angle);
       ctx.drawImage(obj.img, 0, 0, obj.w, obj.h);
+    } else if (obj.type === "mark") {
+      // Palomita o tache de glosa, centrada en (x, y) y de lado `size`.
+      const s = obj.size;
+      ctx.translate(obj.x, obj.y);
+      ctx.rotate(obj.angle);
+      ctx.strokeStyle = obj.color;
+      ctx.lineWidth = Math.max(0.8, s / 6);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      if (obj.mark === "check") {
+        ctx.moveTo(-0.42 * s, 0.02 * s);
+        ctx.lineTo(-0.12 * s, 0.36 * s);
+        ctx.lineTo(0.45 * s, -0.42 * s);
+      } else {
+        ctx.moveTo(-0.36 * s, -0.36 * s);
+        ctx.lineTo(0.36 * s, 0.36 * s);
+        ctx.moveTo(0.36 * s, -0.36 * s);
+        ctx.lineTo(-0.36 * s, 0.36 * s);
+      }
+      ctx.stroke();
     }
     ctx.restore();
   }
@@ -941,7 +962,9 @@
     undo: [],
     tool: "pen",
     // Cada herramienta recuerda su color.
-    colors: { text: "#000000", pen: "#000000", highlight: "#ffeb3b" },
+    colors: { text: "#000000", pen: "#000000", highlight: "#ffeb3b", check: "#e11d2a", cross: "#e11d2a", note: "#e11d2a" },
+    // y su tamaño: las marcas de glosa van chicas para formularios con mucho dato.
+    sizes: { text: 16, pen: 16, check: 10, cross: 10, note: 8 },
     selected: null,
     drag: null, // acción en curso con el puntero
     pointers: new Map(), // dedos/punteros apoyados, para pellizcar
@@ -1098,11 +1121,13 @@
   function setTool(tool) {
     commitText();
     if (ed.colors[ed.tool]) ed.colors[ed.tool] = edColor.value;
+    ed.sizes[ed.tool] = Number(edSize.value);
     ed.tool = tool;
     if (ed.colors[tool]) edColor.value = ed.colors[tool];
+    if (ed.sizes[tool]) edSize.value = ed.sizes[tool];
     if (tool !== "move") select(null);
     editorEl.querySelectorAll(".tool").forEach((b) => b.classList.toggle("active", b.dataset.tool === tool));
-    edOverlay.className = tool === "move" ? "move" : tool === "text" || tool === "edittext" ? "text" : "";
+    edOverlay.className = tool === "move" ? "move" : tool === "text" || tool === "edittext" || tool === "note" ? "text" : "";
     if (tool === "image") edImageInput.click();
     if (tool === "edittext") loadBlocks();
     else setNote("");
@@ -1181,6 +1206,12 @@
     if (o.type === "rect") return { x: o.x, y: o.y, angle: 0, w: o.w, h: o.h };
     if (o.type === "image") return { x: o.x, y: o.y, angle: o.angle, w: o.w, h: o.h };
     if (o.type === "text") return { x: o.x, y: o.y, angle: o.angle, ...textBox(o) };
+    if (o.type === "mark") {
+      const h = o.size / 2;
+      const c = Math.cos(o.angle);
+      const sn = Math.sin(o.angle);
+      return { x: o.x - h * c + h * sn, y: o.y - h * sn - h * c, angle: o.angle, w: o.size, h: o.size };
+    }
     const xs = o.points.map((p) => p[0]);
     const ys = o.points.map((p) => p[1]);
     const m = o.width / 2 + 2;
@@ -1189,20 +1220,19 @@
     return { x, y, angle: 0, w: Math.max(...xs) + m - x, h: Math.max(...ys) + m - y };
   }
 
-  function inFrame(f, x, y) {
+  function inFrame(f, x, y, tol = 4) {
     const dx = x - f.x;
     const dy = y - f.y;
     const lx = dx * Math.cos(-f.angle) - dy * Math.sin(-f.angle);
     const ly = dx * Math.sin(-f.angle) + dy * Math.cos(-f.angle);
-    const tol = 4;
     return lx >= -tol && ly >= -tol && lx <= f.w + tol && ly <= f.h + tol;
   }
 
-  function hitTest(x, y, types) {
+  function hitTest(x, y, types, tol) {
     for (let i = ed.objects.length - 1; i >= 0; i--) {
       const o = ed.objects[i];
       if (types && !types.includes(o.type)) continue;
-      if (inFrame(objectFrame(o), x, y)) return o;
+      if (inFrame(objectFrame(o), x, y, tol)) return o;
     }
     return null;
   }
@@ -1310,14 +1340,31 @@
     if (ed.pointers.size > 2 || ed.drag) return;
     const [x, y] = pointerBase(e);
 
-    if (ed.tool === "text" || ed.tool === "edittext") {
+    if (ed.tool === "check" || ed.tool === "cross") {
+      // Clic sobre una marca: se arrastra para acomodarla. Clic en otro lado: marca nueva.
+      const hit = hitTest(x, y, ["mark"], 0); // sin margen: en un formulario las marcas van juntas
+      if (hit) {
+        select(hit);
+        ed.drag = { kind: "move", x, y, moved: false };
+        return;
+      }
+      pushUndo();
+      const obj = {
+        type: "mark", mark: ed.tool, x, y, size: Number(edSize.value), color: edColor.value, angle: uprightAngle(),
+      };
+      ed.objects.push(obj);
+      select(null);
+      return;
+    }
+
+    if (ed.tool === "text" || ed.tool === "edittext" || ed.tool === "note") {
       if (ed.textInput) {
         commitText();
         return;
       }
       const existing = hitTest(x, y, ["text"]);
       if (existing) openTextInput(existing);
-      else if (ed.tool === "text") openTextInput(null, x, y);
+      else if (ed.tool === "text" || ed.tool === "note") openTextInput(null, x, y);
       else {
         const block = liveBlocks().find((b) => inFrame(b.frame, x, y));
         if (block) openTextInput(null, x, y, block);
@@ -1643,9 +1690,9 @@
   edSize.addEventListener("change", () => {
     const o = ed.selected;
     if (!o) return;
-    if (o.type !== "text" && o.type !== "path") return;
+    if (o.type !== "text" && o.type !== "path" && o.type !== "mark") return;
     pushUndo();
-    if (o.type === "text") o.size = Number(edSize.value);
+    if (o.type === "text" || o.type === "mark") o.size = Number(edSize.value);
     else o.width = Math.max(1, edSize.value / 5);
     redraw();
   });
@@ -1656,6 +1703,8 @@
     if ((e.key === "Delete" || e.key === "Backspace") && ed.selected) {
       e.preventDefault();
       deleteSelected();
+    } else if (!ctrl && !e.altKey && { v: "check", x: "cross", n: "note" }[e.key.toLowerCase()]) {
+      setTool({ v: "check", x: "cross", n: "note" }[e.key.toLowerCase()]);
     } else if (e.key.toLowerCase() === "z" && ctrl) {
       e.preventDefault();
       undo();

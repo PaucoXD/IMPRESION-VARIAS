@@ -536,3 +536,7 @@ a.tool-card:hover, a.tool-card:focus-visible {
   .editor-stage { padding: 8px; }
   .range-input { width: 100%; }
 }
+
+/* Glosa: palomita, tache y nota en rojo */
+.tool.glosa { font-size: 1rem; font-weight: 700; min-width: 36px; }
+.tool.glosa:not(.active) { color: #e11d2a; }

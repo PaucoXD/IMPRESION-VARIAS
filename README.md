@@ -27,6 +27,7 @@ Al abrir la página se ve la lista de herramientas (como iLovePDF). Todas trabaj
    - **Texto**: clic donde quieras escribir y Enter para terminar (Mayús+Enter para otra línea). Clic sobre un texto para cambiarlo.
    - **Dibujar** a mano alzada, **Resaltar** (arrastrando) y **Tapar** con blanco (para ocultar algo).
    - **Imagen**: insertar una imagen o firma; luego muévela con **Mover**.
+   - **Glosar** (para revisar pedimentos y formularios): **✓** pone una palomita roja con cada clic, **✗** un tache y **Nota** escribe un comentario corto en rojo. Teclas V, X y N. Clic sobre una marca para moverla; con Tamaño cambias lo grande de la marca.
    - **Mover** y seleccionar elementos; *Borrar elemento* (o Supr) y *Deshacer* (Ctrl+Z). Color y tamaño se aplican al elemento seleccionado.
    - **Zoom** con − / + (clic en el porcentaje para ajustar la hoja a la pantalla), Ctrl + rueda del ratón o pellizcando en el móvil.
    - Pulsa **Guardar** para aplicar los cambios a la hoja.

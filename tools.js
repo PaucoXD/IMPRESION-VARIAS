@@ -35,6 +35,7 @@
     lock: "M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4",
     unlock: "M6 11h12v10H6zM8 11V7a4 4 0 0 1 7.5-2",
     redact: "M4 5h16v4H4zM4 13h7M4 17h12",
+    glosa: "M4 4h10l4 4v12H4zM7 13l2 2 4-5M14 4v4h4",
   };
 
   const COLORS = {
@@ -75,6 +76,9 @@
     { id: "firmar", cat: "editar", icon: "sign", kind: "lista", name: "Firmar PDF",
       desc: "Firma a mano o pon la imagen de tu firma en cualquier hoja.",
       help: "Abre la hoja con ✎ y usa Dibujar para firmar a mano, o Imagen para poner la foto de tu firma." },
+    { id: "glosar", cat: "editar", icon: "glosa", kind: "lista", name: "Glosar pedimento",
+      desc: "Revisa el pedimento dato por dato: palomita roja con un clic, tache y notas cortas.",
+      help: "Abre la hoja con ✎ y elige ✓ (o tecla V): cada clic pone una palomita. ✗ (X) marca un error y Nota (N) escribe en rojo. Clic sobre una marca para moverla; Supr la borra." },
     { id: "marca-agua", cat: "editar", icon: "water", kind: "panel", name: "Marca de agua",
       desc: "Pon un texto como CONFIDENCIAL o COPIA en todas las hojas." },
     { id: "numeros", cat: "editar", icon: "numbers", kind: "panel", name: "Números de página",
