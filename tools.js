@@ -14,7 +14,6 @@
     ["optimizar", "Optimizar"],
     ["convertir", "Convertir"],
     ["editar", "Editar"],
-    ["seguridad", "Seguridad"],
   ];
 
   const ICONS = {
@@ -60,8 +59,6 @@
     { id: "rotar", cat: "organizar", icon: "rotate", kind: "lista", name: "Rotar PDF",
       desc: "Gira una hoja o todas las hojas del documento.",
       help: "Usa ↺ ↻ bajo cada hoja o ↻ Girar todas para el archivo completo." },
-    { id: "ordenar", cat: "organizar", icon: "order", kind: "pronto", name: "Ordenar páginas",
-      desc: "Arrastra las hojas para cambiar su orden dentro del documento." },
     { id: "comprimir", cat: "optimizar", icon: "compress", kind: "panel", name: "Comprimir PDF",
       desc: "Reduce el peso del PDF para enviarlo por correo o WhatsApp." },
     { id: "ocr", cat: "optimizar", icon: "ocr", kind: "lista", name: "Digitalizar (OCR)",
@@ -82,14 +79,6 @@
       desc: "Pon un texto como CONFIDENCIAL o COPIA en todas las hojas." },
     { id: "numeros", cat: "editar", icon: "numbers", kind: "panel", name: "Números de página",
       desc: "Numera las hojas eligiendo la posición, el formato y el tamaño." },
-    { id: "recortar", cat: "editar", icon: "crop", kind: "pronto", name: "Recortar PDF",
-      desc: "Quita los márgenes de las hojas o deja solo una parte." },
-    { id: "censurar", cat: "seguridad", icon: "redact", kind: "pronto", name: "Censurar PDF",
-      desc: "Borra para siempre textos y datos privados del documento." },
-    { id: "proteger", cat: "seguridad", icon: "lock", kind: "pronto", name: "Proteger PDF",
-      desc: "Pon una contraseña para que nadie más pueda abrir el PDF." },
-    { id: "desbloquear", cat: "seguridad", icon: "unlock", kind: "pronto", name: "Desbloquear PDF",
-      desc: "Quita la contraseña de un PDF del que la conoces." },
   ];
 
   const svgIcon = (name) =>
