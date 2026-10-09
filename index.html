@@ -100,6 +100,12 @@
           <button class="btn small" data-act="range">Eliminar</button>
           <button class="btn small ghost" data-act="restore">Restaurar todas</button>
           <button class="btn small ghost" data-act="rotate-all" title="Girar todas las hojas">↻ Girar todas</button>
+          <div class="copies" title="Cuántas veces se imprime este archivo">
+            <span>Copias</span>
+            <button class="btn small ghost" data-act="copies-down" aria-label="Menos copias">−</button>
+            <input class="copies-input" type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="Copias">
+            <button class="btn small ghost" data-act="copies-up" aria-label="Más copias">+</button>
+          </div>
           <button class="btn small ghost" data-act="up" title="Subir">↑</button>
           <button class="btn small ghost" data-act="down" title="Bajar">↓</button>
           <button class="btn small danger" data-act="remove" title="Quitar archivo">Quitar</button>

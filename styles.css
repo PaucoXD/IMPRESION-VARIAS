@@ -326,6 +326,24 @@ a.tool-card:hover, a.tool-card:focus-visible {
   color: var(--text);
   width: 180px;
 }
+.copies { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+.copies .btn { width: 30px; padding-left: 0; padding-right: 0; }
+.copies-input {
+  font: inherit;
+  font-size: 0.85rem;
+  width: 48px;
+  padding: 5px 4px;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  -moz-appearance: textfield;
+}
+.copies-input::-webkit-outer-spin-button,
+.copies-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.copies-input:focus { outline: 2px solid var(--primary); outline-offset: 0; border-color: transparent; }
+.doc.multi .copies-input { border-color: var(--primary); color: var(--primary); font-weight: 600; }
 .range-input:focus { outline: 2px solid var(--primary); outline-offset: 0; border-color: transparent; }
 
 .pages {
