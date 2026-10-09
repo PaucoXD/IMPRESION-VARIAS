@@ -139,7 +139,7 @@
     const pdfjs = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
     const pages = [];
     for (let i = 0; i < pdfjs.numPages; i++) pages.push({ removed: false, rotation: 0, edits: [], textRemovals: [] });
-    return { id: nextId++, name: file.name, bytes, pdfjs, pages };
+    return { id: nextId++, name: file.name, bytes, pdfjs, pages, copies: 1 };
   }
 
   function loadImage(src) {
@@ -798,8 +798,17 @@
       if (e.key === "Enter") removeRange(doc, rangeInput);
     });
 
+    const copiesInput = node.querySelector(".copies-input");
+    const setCopies = (n) => {
+      doc.copies = Math.min(99, Math.max(1, Math.round(Number(n)) || 1));
+      copiesInput.value = doc.copies;
+      refreshDoc(doc);
+    };
+    copiesInput.addEventListener("change", () => setCopies(copiesInput.value));
+
     node.querySelector(".doc-tools").addEventListener("click", (e) => {
       const act = e.target.closest("button")?.dataset.act;
+      if (act === "copies-up" || act === "copies-down") setCopies(doc.copies + (act === "copies-up" ? 1 : -1));
       if (act === "range") removeRange(doc, rangeInput);
       if (act === "restore") {
         doc.pages.forEach((p) => (p.removed = false));
@@ -862,8 +871,10 @@
     });
     const kept = doc.pages.filter((p) => !p.removed).length;
     const total = doc.pages.length;
-    node.querySelector(".doc-count").textContent =
-      kept === total ? `${total} ${total === 1 ? "hoja" : "hojas"}` : `${kept} de ${total} hojas se imprimirán`;
+    let count = kept === total ? `${total} ${total === 1 ? "hoja" : "hojas"}` : `${kept} de ${total} hojas se imprimirán`;
+    if (doc.copies > 1) count += ` · ${doc.copies} copias (${kept * doc.copies} hojas)`;
+    node.querySelector(".doc-count").textContent = count;
+    node.classList.toggle("multi", doc.copies > 1);
     updateSummary();
   }
 
@@ -926,9 +937,11 @@
   function updateSummary() {
     const total = docs.reduce((n, d) => n + d.pages.length, 0);
     const kept = docs.reduce((n, d) => n + d.pages.filter((p) => !p.removed).length, 0);
+    const printed = docs.reduce((n, d) => n + d.pages.filter((p) => !p.removed).length * d.copies, 0);
     if (!docs.length) summaryEl.textContent = "Sin archivos";
     else summaryEl.textContent =
-      `${docs.length} ${docs.length === 1 ? "archivo" : "archivos"} · ${kept} de ${total} hojas`;
+      `${docs.length} ${docs.length === 1 ? "archivo" : "archivos"} · ${kept} de ${total} hojas` +
+      (printed !== kept ? ` · ${printed} a imprimir` : "");
     btnPrint.disabled = kept === 0;
     btnDownload.disabled = kept === 0;
     btnClear.disabled = docs.length === 0;
@@ -1771,32 +1784,38 @@
     );
   }
 
-  async function buildMergedPdf() {
+  // withCopies: repite cada archivo según su número de copias (solo para imprimir y descargar;
+  // las herramientas trabajan con cada archivo una vez).
+  async function buildMergedPdf({ withCopies = false } = {}) {
     const out = await PDFDocument.create();
     for (const doc of docs) {
       const keep = doc.pages.map((p, i) => (p.removed ? -1 : i)).filter((i) => i >= 0);
       if (!keep.length) continue;
-      const copied = await out.copyPages(await libDoc(doc), keep);
-      for (let k = 0; k < copied.length; k++) {
-        const page = copied[k];
-        const state = doc.pages[keep[k]];
-        out.addPage(page);
-        if (state.textRemovals.length) {
-          setContents(out, page, contentWithout(await pageContent(doc, keep[k]), state.textRemovals));
-        }
-        if (state.edits.length) {
-          await drawEdits(out, page, doc, keep[k]);
-        }
-        if (state.rotation) {
-          page.setRotation(degrees((page.getRotation().angle + state.rotation) % 360));
-        }
-      }
+      for (let c = 0; c < (withCopies ? doc.copies : 1); c++) await appendDoc(out, doc, keep);
     }
     return out.save();
   }
 
+  async function appendDoc(out, doc, keep) {
+    const copied = await out.copyPages(await libDoc(doc), keep);
+    for (let k = 0; k < copied.length; k++) {
+      const page = copied[k];
+      const state = doc.pages[keep[k]];
+      out.addPage(page);
+      if (state.textRemovals.length) {
+        setContents(out, page, contentWithout(await pageContent(doc, keep[k]), state.textRemovals));
+      }
+      if (state.edits.length) {
+        await drawEdits(out, page, doc, keep[k]);
+      }
+      if (state.rotation) {
+        page.setRotation(degrees((page.getRotation().angle + state.rotation) % 360));
+      }
+    }
+  }
+
   async function makePdfUrl() {
-    const bytes = await buildMergedPdf();
+    const bytes = await buildMergedPdf({ withCopies: true });
     if (lastPrintUrl) URL.revokeObjectURL(lastPrintUrl);
     lastPrintUrl = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
     return lastPrintUrl;

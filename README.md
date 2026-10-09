@@ -36,7 +36,7 @@ Al abrir la página se ve la lista de herramientas (como iLovePDF). Todas trabaj
    - **Mover** y seleccionar elementos; *Borrar elemento* (o Supr) y *Deshacer* (Ctrl+Z). Color y tamaño se aplican al elemento seleccionado.
    - **Zoom** con − / + (clic en el porcentaje para ajustar la hoja a la pantalla), Ctrl + rueda del ratón o pellizcando en el móvil.
    - Pulsa **Guardar** para aplicar los cambios a la hoja.
-5. Ordena los archivos con ↑ / ↓ y quita los que sobren con *Quitar*.
+5. Ordena los archivos con ↑ / ↓ y quita los que sobren con *Quitar*. Con **Copias** (− / +) eliges cuántas veces se imprime cada archivo.
 6. Pulsa **Imprimir todo** para mandar todo a la impresora en un solo trabajo, o **Descargar PDF** para guardar el PDF unido.
 
 Todo se procesa en tu navegador: los archivos no se suben a ningún servidor y funciona sin conexión.
